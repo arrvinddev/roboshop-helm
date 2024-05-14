@@ -14,15 +14,26 @@ pipeline{
         dir('APP'){
             git branch: 'main', url: 'https://github.com/arrvinddev/${component}'
         }
+        dir('HELM'){
+            git branch: 'main', url: 'https://github.com/arrvinddev/roboshop-helm'
+        }
         }
     }
 
      stage('Helm Deploy') {
         steps{
-        sh 'aws eks update-kubeconfig --name prod-eks-cluster'
-        sh 'helm upgrade -i ${component} . -f APP/values.yaml --set app_version=${app_version}'
+            dir('HELM'){
+                sh 'aws eks update-kubeconfig --name prod-eks-cluster'
+                sh 'helm upgrade -i ${component} . -f ../APP/values.yaml --set app_version=${app_version}'
+            }
      }
      }
 
+   }
+
+   post {
+     always {
+        cleanWs()
+     }
    }
 }
